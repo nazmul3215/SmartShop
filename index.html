@@ -1,0 +1,725 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>DevMart</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- icons -->
+  <script src="https://kit.fontawesome.com/a2d9b9b0c7.js" crossorigin="anonymous"></script>
+
+  <style>
+    .cart-scroll { max-height: 60vh; overflow:auto; }
+  </style>
+</head>
+<body class="bg-gradient-to-tr from-amber-100 via-sky-100 to-rose-100 min-h-screen text-slate-800">
+
+  <!-- NAVBAR -->
+  <header class="sticky top-0 z-50 bg-amber-300/95 backdrop-blur-sm">
+    <nav class="max-w-6xl mx-auto px-4 md:px-6 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <img src="DevMart.jpeg" alt="DevMart" class="rounded-full" height="50" width="50" />
+        <div>
+          <a href="#" class="font-bold text-xl">DevMart</a>
+          <div class="text-xs">Premium Brands That Fit Your Budget</div>
+        </div>
+      </div>
+
+      <div class="hidden md:flex gap-6 items-center">
+        <a href="#home" class="nav-link text-lg" data-target="home">Home</a>
+        <a href="#products" class="nav-link text-lg" data-target="products">Products</a>
+        <a href="#reviews" class="nav-link text-lg" data-target="reviews">Reviews</a>
+        <a href="#contact" class="nav-link text-lg" data-target="contact">Contact</a>
+        <button id="cartToggle" class="relative bg-amber-400 px-3 py-2 rounded-md shadow">
+          <i class="fa fa-shopping-cart"></i>
+          <span id="cartCount" class="absolute -top-2 -right-2 bg-red-600 text-white text-xs rounded-full px-1">0</span>
+        </button>
+      </div>
+
+      <!-- mobile menu -->
+      <div class="md:hidden flex items-center gap-2">
+        <button id="mobileMenuBtn" class="p-2">
+          <i class="fa fa-bars text-2xl"></i>
+        </button>
+        <button id="cartToggleMobile" class="p-2 relative">
+          <i class="fa fa-shopping-cart text-2xl"></i>
+          <span id="cartCountMobile" class="absolute -top-1 -right-1 bg-red-600 text-white text-xs rounded-full px-1">0</span>
+        </button>
+      </div>
+    </nav>
+
+    <!-- mobile nav -->
+    <div id="mobileNav" class="md:hidden bg-amber-200/90 px-4 pb-4 hidden">
+      <a href="#home" class="block py-2 nav-link" data-target="home">Home</a>
+      <a href="#products" class="block py-2 nav-link" data-target="products">Products</a>
+      <a href="#reviews" class="block py-2 nav-link" data-target="reviews">Reviews</a>
+      <a href="#contact" class="block py-2 nav-link" data-target="contact">Contact</a>
+    </div>
+  </header>
+
+  <main id="home">
+    <!-- BANNER SLIDER -->
+    <section class="max-w-6xl mx-auto px-4 md:px-6 mt-6">
+      <div class="relative rounded-xl overflow-hidden shadow-lg">
+        <div id="bannerSlides" class="h-64 md:h-80 lg:h-96 flex transition-transform duration-700"></div>
+
+        <!-- controls -->
+        <button id="bannerPrev" class="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 p-2 rounded-full shadow">
+          <i class="fa fa-chevron-left"></i>
+        </button>
+        <button id="bannerNext" class="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 p-2 rounded-full shadow">
+          <i class="fa fa-chevron-right"></i>
+        </button>
+      </div>
+    </section>
+
+    <!-- Search + Balance + Add Money -->
+    <section class="max-w-6xl mx-auto px-4 md:px-6 mt-6 grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
+      <div class="col-span-2 flex gap-3">
+        <input id="searchInput" type="text" placeholder="Search products..." class="flex-1 p-3 rounded-lg border shadow-sm" />
+        <select id="sortSelect" class="p-3 rounded-lg border">
+          <option value="default">Sort: Default</option>
+          <option value="price-asc">Price: Low → High</option>
+          <option value="price-desc">Price: High → Low</option>
+          <option value="rating-desc">Rating: High → Low</option>
+        </select>
+      </div>
+
+      <div class="flex items-center justify-end gap-3">
+        <div class="bg-white rounded-lg p-3 shadow text-right">
+          <div class="text-sm text-slate-500">Balance</div>
+          <div class="font-bold text-lg"><span id="balanceAmount">1000</span> BDT</div>
+        </div>
+        <button id="addMoneyBtn" class="bg-sky-500 hover:bg-sky-600 text-white px-4 py-2 rounded-lg shadow">+1000</button>
+      </div>
+    </section>
+
+    <!-- PRODUCTS -->
+    <section id="products" class="max-w-6xl mx-auto px-4 md:px-6 mt-6">
+      <h2 class="text-2xl font-bold mb-4">Products</h2>
+      <div id="productsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"></div>
+
+      <!-- placeholder -->
+      <div id="productsLoader" class="text-center py-8 text-slate-500 hidden">Loading products...</div>
+    </section>
+
+    <!-- CART SIDEBAR -->
+    <aside id="cartSidebar" class="fixed right-4 top-24 w-80 md:w-96 bg-white rounded-lg shadow-lg border p-4 hidden z-50">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="font-bold text-lg">Your Cart</h3>
+        <button id="closeCart" class="text-slate-500"><i class="fa fa-times"></i></button>
+      </div>
+
+      <div id="cartItems" class="cart-scroll space-y-3 mb-3"></div>
+
+      <div class="border-t pt-3 space-y-2">
+        <div class="flex justify-between">
+          <div>Subtotal</div><div><span id="subtotalVal">0</span> BDT</div>
+        </div>
+        <div class="flex justify-between">
+          <div>Delivery</div><div><span id="deliveryVal">0</span> BDT</div>
+        </div>
+        <div class="flex justify-between">
+          <div>Shipping</div><div><span id="shippingVal">0</span> BDT</div>
+        </div>
+        <div class="flex justify-between">
+          <div>Discount</div><div>- <span id="discountVal">0</span> BDT</div>
+        </div>
+        <div class="flex justify-between font-bold text-lg">
+          <div>Total</div><div><span id="totalVal">0</span> BDT</div>
+        </div>
+
+        <div class="flex gap-2">
+          <input id="couponInput" placeholder="Coupon e.g. SMART10" class="flex-1 p-2 border rounded" />
+          <button id="applyCouponBtn" class="bg-amber-400 px-3 rounded">Apply</button>
+        </div>
+
+        <div id="cartWarning" class="text-red-600 text-sm hidden">Warning: total exceeds your balance!</div>
+
+        <button id="checkoutBtn" class="w-full bg-sky-600 text-white py-2 rounded">Checkout</button>
+      </div>
+    </aside>
+
+    <!-- REVIEWS -->
+ <section id="reviews" class="max-w-6xl mx-auto px-4 md:px-6 mt-10">
+  <h2 class="text-2xl font-bold mb-4">Customer Reviews</h2>
+  <div class="relative bg-white rounded-lg shadow p-4 overflow-hidden">
+    <div id="reviewsTrack" class="flex gap-4 transition-transform duration-1000"></div>
+
+    <button id="revPrev" class="absolute left-2 top-1/2 -translate-y-1/2 bg-white p-2 rounded-full shadow">
+      <i class="fa fa-chevron-left"></i>
+    </button>
+    <button id="revNext" class="absolute right-2 top-1/2 -translate-y-1/2 bg-white p-2 rounded-full shadow">
+      <i class="fa fa-chevron-right"></i>
+    </button>
+  </div>
+</section>
+
+    <!-- CONTACT -->
+    <section id="contact" class="max-w-6xl mx-auto px-4 md:px-6 mt-10 mb-20">
+      <h2 class="text-2xl font-bold mb-4">Contact Us</h2>
+      <div class="grid md:grid-cols-2 gap-6">
+        <div class="bg-white p-6 rounded shadow">
+          <h3 class="font-semibold">Write to us</h3>
+          <p class="text-sm text-slate-500 mb-4">We love feedback, send a message and we'll reply.</p>
+          <form id="contactForm" class="space-y-3">
+            <input name="name" required placeholder="Your name" class="w-full p-3 border rounded" />
+            <input name="email" type="email" required placeholder="Your email" class="w-full p-3 border rounded" />
+            <textarea name="message" rows="5" required placeholder="Your message" class="w-full p-3 border rounded"></textarea>
+            <button type="submit" class="bg-amber-400 px-4 py-2 rounded">Submit</button>
+            <div id="contactThanks" class="text-green-600 hidden">Thanks! Your message has been received.</div>
+          </form>
+        </div>
+
+        <div class="bg-white p-6 rounded shadow">
+          <h3 class="font-semibold">About DevMart</h3>
+          <p class="mt-2 text-sm text-slate-600">Get the brands you love without breaking the bank! Discover stylish, high-quality thrifted fashion that fits your budget perfectly.</p>
+
+          <div class="mt-4">
+            <h4 class="font-medium">Team</h4>
+            <ul class="list-disc list-inside mt-2 text-sm">
+              <li>Md. Nazmul Ahsan - C233117 </li>
+              <li>Saif Quraishe — C233103</li>
+            </ul>
+          </div>
+
+          <div class="mt-4">
+            <h4 class="font-medium">Contact</h4>
+            <p class="text-sm">nakib3215@gmail.com<br/>01690168294</p>
+            <p class="text-sm">saifquraishe@gmail.com<br/>01980660806</p>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="bg-amber-300/90">
+    <div class="max-w-6xl mx-auto px-4 md:px-6 py-6 flex flex-col md:flex-row items-center justify-between gap-4">
+      <div>&copy; <span id="year"></span> DevMart — All rights reserved.</div>
+      <div class="flex gap-4">
+        <a href="#home" class="text-slate-700">Home</a>
+        <a href="#products" class="text-slate-700">Products</a>
+        <a href="#reviews" class="text-slate-700">Reviews</a>
+        <a href="#contact" class="text-slate-700">Contact</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Back to top -->
+  <button id="backTop" class="fixed right-6 bottom-8 bg-sky-600 text-white p-3 rounded-full shadow hidden">
+    <i class="fa fa-arrow-up"></i>
+  </button>
+<!--JS-->
+  <script>
+
+  const STATE = {
+    products: [],
+    filtered: [],
+    cart: [], // {id, title, price, qty, image}
+    coupon: null,
+    balance: Number(localStorage.getItem('ss_balance') || 1000),
+    bannerIndex: 0,
+    reviewIndex: 0,
+  };
+
+  // constants
+  const DELIVERY_CHARGE = 60;
+  const SHIPPING_COST = 40;
+  const COUPONS = { 'SMART10': 0.10 };
+
+  /*Utilities*/
+  function q(id){ return document.getElementById(id); }
+  function formatBDT(n){ return Math.round(n); } // integer BDT
+
+  /*Banner Slider*/
+  const bannerImages = [
+    'https://images.pexels.com/photos/322207/pexels-photo-322207.jpeg',
+    'https://images.pexels.com/photos/18888356/pexels-photo-18888356.jpeg',
+    'https://images.pexels.com/photos/996329/pexels-photo-996329.jpeg',
+    'https://images.pexels.com/photos/1210484/pexels-photo-1210484.jpeg',
+    'https://www.pexels.com/photo/white-android-computer-monitor-turned-on-159394/',
+    'https://www.pexels.com/photo/macbook-pro-on-brown-wooden-table-1901388/',
+]
+  function renderBanner(){
+    const track = q('bannerSlides');
+    track.innerHTML = '';
+    bannerImages.forEach((src,i)=>{
+      const div = document.createElement('div');
+      div.className = 'flex-none w-full h-64 md:h-80 lg:h-96 bg-center bg-cover';
+      div.style.backgroundImage = `url(${src})`;
+      track.appendChild(div);
+    });
+    updateBannerPos();
+  }
+
+  function updateBannerPos(){
+    const track = q('bannerSlides');
+    track.style.transform = `translateX(-${STATE.bannerIndex * 100}%)`;
+  }
+
+  q('bannerNext').addEventListener('click', ()=>{
+    STATE.bannerIndex = (STATE.bannerIndex + 1) % bannerImages.length;
+    updateBannerPos();
+  });
+  q('bannerPrev').addEventListener('click', ()=>{
+    STATE.bannerIndex = (STATE.bannerIndex - 1 + bannerImages.length) % bannerImages.length;
+    updateBannerPos();
+  });
+  // auto rotate
+  setInterval(()=> {
+    STATE.bannerIndex = (STATE.bannerIndex + 1) % bannerImages.length;
+    updateBannerPos();
+  }, 5000);
+
+  /* ==========================
+     Fetch Products (FakeStore API)
+     ========================== */
+  async function fetchProducts(){
+    q('productsLoader').classList.remove('hidden');
+    try {
+      const res = await fetch('https://fakestoreapi.com/products');
+      if(!res.ok) throw new Error('API error');
+      const data = await res.json();
+      STATE.products = data.map(p => ({
+        id: p.id,
+        title: p.title,
+        price: Math.round(p.price * 100) / 100,
+        rating: p.rating ? p.rating.rate : 0,
+        image: p.image,
+        category: p.category
+      }));
+    } catch (err) {
+      console.warn('Fetch failed, using fallback sample products.', err);
+      // fallback sample (if API blocked)
+      STATE.products = [
+        {id:1,title:'Sample Dress',price:1700,rating:4.2,image:'https://picsum.photos/seed/p1/400/400',category:'women'},
+        {id:2,title:'Sample Bag',price:900,rating:4.6,image:'https://picsum.photos/seed/p2/400/400',category:'accessories'},
+        {id:3,title:'Sample Shoe',price:1200,rating:4.0,image:'https://picsum.photos/seed/p3/400/400',category:'shoes'},
+        // ... you may expand
+      ];
+    } finally {
+      q('productsLoader').classList.add('hidden');
+      STATE.filtered = [...STATE.products];
+      renderProducts();
+    }
+  }
+
+  /* ==========================
+     Render Products Grid
+     ========================== */
+  function renderProducts(){
+    const grid = q('productsGrid');
+    grid.innerHTML = '';
+    if(STATE.filtered.length === 0){
+      grid.innerHTML = '<div class="col-span-full text-center text-slate-500 py-6">No products found.</div>';
+      return;
+    }
+    STATE.filtered.forEach(p => {
+      const card = document.createElement('div');
+      card.className = 'bg-white rounded-lg shadow p-4 flex flex-col';
+      card.innerHTML = `
+        <div class="aspect-[4/3] mb-3 bg-center bg-cover rounded" style="background-image:url('${p.image}')"></div>
+        <h3 class="font-semibold text-sm line-clamp-2">${escapeHtml(p.title)}</h3>
+        <div class="mt-2 flex items-center justify-between">
+          <div class="text-emerald-700 font-bold">${formatBDT(p.price)} BDT</div>
+          <div class="text-sm text-yellow-500"><i class="fa fa-star"></i> ${p.rating ?? 0}</div>
+        </div>
+        <div class="mt-3 flex gap-2">
+          <button class="addBtn flex-1 bg-amber-400 hover:bg-amber-500 text-white py-2 rounded" data-id="${p.id}">Add to Cart</button>
+          <button class="viewBtn flex-1 border rounded py-2 text-slate-700" data-id="${p.id}">View</button>
+        </div>
+      `;
+      grid.appendChild(card);
+    });
+
+    // attach handlers
+    document.querySelectorAll('.addBtn').forEach(btn => {
+      btn.addEventListener('click', ()=> addToCart(Number(btn.dataset.id)));
+    });
+  }
+
+  function escapeHtml(text){
+    return text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  /* ==========================
+     Product Search & Sort
+     ========================== */
+  q('searchInput').addEventListener('input', (e)=>{
+    const qstr = e.target.value.trim().toLowerCase();
+    STATE.filtered = STATE.products.filter(p => p.title.toLowerCase().includes(qstr) || p.category.toLowerCase().includes(qstr));
+    applySort(); // keep sort
+    renderProducts();
+  });
+
+  q('sortSelect').addEventListener('change', (e)=>{
+    applySort();
+    renderProducts();
+  });
+
+  function applySort(){
+    const val = q('sortSelect').value;
+    if(val === 'price-asc') STATE.filtered.sort((a,b)=>a.price-b.price);
+    else if(val === 'price-desc') STATE.filtered.sort((a,b)=>b.price-a.price);
+    else if(val === 'rating-desc') STATE.filtered.sort((a,b)=>b.rating-a.rating);
+    else STATE.filtered = STATE.filtered.sort((a,b)=>a.id-b.id);
+  }
+
+  /* ==========================
+     Cart Functions
+     ========================== */
+  function addToCart(id){
+    const prod = STATE.products.find(p=>p.id===id);
+    if(!prod) return;
+    const existing = STATE.cart.find(it=>it.id===id);
+    // compute prospective total with +1 qty
+    let newCart = JSON.parse(JSON.stringify(STATE.cart));
+    if(existing) {
+      newCart = newCart.map(it => it.id===id ? {...it, qty: it.qty + 1} : it);
+    } else {
+      newCart.push({ id: prod.id, title: prod.title, price: prod.price, qty: 1, image: prod.image });
+    }
+    const prospectiveTotal = computeTotals(newCart).total;
+
+    if(prospectiveTotal > STATE.balance){
+      showCartWarning(true);
+      alert('Cannot add: total would exceed your balance.');
+      return;
+    } else {
+      showCartWarning(false);
+    }
+
+    // commit
+    STATE.cart = newCart;
+    renderCart();
+    openCart();
+  }
+
+  function removeFromCart(id){
+    STATE.cart = STATE.cart.filter(it=>it.id!==id);
+    renderCart();
+  }
+
+  function changeQty(id, delta){
+    STATE.cart = STATE.cart.map(it => it.id===id ? {...it, qty: Math.max(1, it.qty + delta)} : it);
+    renderCart();
+  }
+
+  function computeTotals(cartArr = STATE.cart){
+    const subtotal = formatBDT(cartArr.reduce((s,it)=> s + (it.price * it.qty), 0));
+    const delivery = subtotal > 0 ? DELIVERY_CHARGE : 0;
+    const shipping = subtotal > 0 ? SHIPPING_COST : 0;
+    let discount = 0;
+    if(STATE.coupon && COUPONS[STATE.coupon]){
+      discount = Math.round(subtotal * COUPONS[STATE.coupon]);
+    }
+    const total = Math.max(0, subtotal + delivery + shipping - discount);
+    return { subtotal, delivery, shipping, discount, total };
+  }
+
+  function renderCart(){
+    // update counts
+    const totalQty = STATE.cart.reduce((s,it)=> s + it.qty, 0);
+    q('cartCount').textContent = totalQty;
+    q('cartCountMobile').textContent = totalQty;
+    q('cartCount').parentElement.classList.toggle('hidden', false);
+
+    // render list
+    const container = q('cartItems');
+    container.innerHTML = '';
+    if(STATE.cart.length === 0){
+      container.innerHTML = '<div class="text-sm text-slate-500">Your cart is empty.</div>';
+    } else {
+      STATE.cart.forEach(it=>{
+        const row = document.createElement('div');
+        row.className = 'flex gap-3 items-center';
+        row.innerHTML = `
+          <img src="${it.image}" alt="" class="w-14 h-14 object-cover rounded"/>
+          <div class="flex-1">
+            <div class="text-sm font-medium line-clamp-2">${escapeHtml(it.title)}</div>
+            <div class="text-xs text-slate-500">${formatBDT(it.price)} BDT x ${it.qty}</div>
+            <div class="mt-1 flex gap-2">
+              <button class="px-2 py-1 border rounded qty-minus" data-id="${it.id}">-</button>
+              <button class="px-2 py-1 border rounded qty-plus" data-id="${it.id}">+</button>
+              <button class="px-2 py-1 text-red-600 delete-btn" data-id="${it.id}">Remove</button>
+            </div>
+          </div>
+        `;
+        container.appendChild(row);
+      });
+
+      // attach qty / remove handlers
+      container.querySelectorAll('.qty-plus').forEach(btn => {
+        btn.addEventListener('click', ()=> {
+          changeQty(Number(btn.dataset.id), 1);
+        });
+      });
+      container.querySelectorAll('.qty-minus').forEach(btn => {
+        btn.addEventListener('click', ()=> {
+          changeQty(Number(btn.dataset.id), -1);
+        });
+      });
+      container.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.addEventListener('click', ()=> {
+          if(confirm('Remove item from cart?')) removeFromCart(Number(btn.dataset.id));
+        });
+      });
+    }
+
+    // totals
+    const totals = computeTotals();
+    q('subtotalVal').textContent = totals.subtotal;
+    q('deliveryVal').textContent = totals.delivery;
+    q('shippingVal').textContent = totals.shipping;
+    q('discountVal').textContent = totals.discount;
+    q('totalVal').textContent = totals.total;
+
+    // balance check
+    if(totals.total > STATE.balance){
+      showCartWarning(true);
+    } else showCartWarning(false);
+
+    // persist cart to localStorage (optional)
+    localStorage.setItem('ss_cart', JSON.stringify(STATE.cart));
+  }
+
+  function showCartWarning(show){
+    q('cartWarning').classList.toggle('hidden', !show);
+  }
+
+  /* ==========================
+     Coupon apply
+     ========================== */
+  q('applyCouponBtn').addEventListener('click', ()=>{
+    const code = q('couponInput').value.trim().toUpperCase();
+    if(!code) return alert('Enter coupon code');
+    if(COUPONS[code]){
+      STATE.coupon = code;
+      renderCart();
+      alert(`Coupon ${code} applied (${COUPONS[code]*100}% off)`);
+    } else {
+      alert('Invalid coupon');
+    }
+  });
+
+  /* ==========================
+     Checkout demo (does not process real payments)
+     ========================== */
+  q('checkoutBtn').addEventListener('click', ()=>{
+    const totals = computeTotals();
+    if(STATE.cart.length === 0) return alert('Your cart is empty.');
+    if(totals.total > STATE.balance) return alert('Insufficient balance. Add money first.');
+
+    // deduct balance
+    STATE.balance = Math.max(0, STATE.balance - totals.total);
+    localStorage.setItem('ss_balance', STATE.balance);
+    // clear cart
+    STATE.cart = [];
+    STATE.coupon = null;
+    q('couponInput').value = '';
+    renderCart();
+    updateBalanceUI();
+    alert('Checkout successful! Thank you for your purchase.');
+    closeCart();
+  });
+
+  /* ==========================
+     Cart UI open/close
+     ========================== */
+  function openCart(){
+    q('cartSidebar').classList.remove('hidden');
+  }
+  function closeCart(){
+    q('cartSidebar').classList.add('hidden');
+  }
+  q('cartToggle').addEventListener('click', openCart);
+  q('cartToggleMobile').addEventListener('click', openCart);
+  q('closeCart').addEventListener('click', closeCart);
+
+  /* ==========================
+     Balance + Add Money
+     ========================== */
+  function updateBalanceUI(){
+    q('balanceAmount').textContent = formatBDT(STATE.balance);
+  }
+  q('addMoneyBtn').addEventListener('click', ()=>{
+    STATE.balance = Number(STATE.balance) + 1000;
+    localStorage.setItem('ss_balance', STATE.balance);
+    updateBalanceUI();
+    // re-check cart
+    renderCart();
+  });
+
+  /* 
+     Reviews carousel (local JSON)
+  */
+  const REVIEWS = [
+    { name:'Leo Messi', comment:'Excellent service and fast delivery!', rating:5, date:'2026-01-12' },
+    { name:'Cristiano Ronaldo', comment:'Product quality is good for the price.', rating:4, date:'2025-09-23' },
+    { name:'Tanvir Islam', comment:'Packaging could be improved.', rating:3, date:'2025-12-23' },
+    { name:'Abdullah Hamim', comment:'Loved the customer support.', rating:5, date:'2024-03-02' },
+    { name:'Samina Jannat', comment:'Will buy again!', rating:5, date:'2024-04-11' }
+  ];
+
+  const STATE_REVIEW = { index: 0 };
+
+  function q(id){ return document.getElementById(id); }
+
+  function renderReviews(){
+    const track = q('reviewsTrack');
+    track.innerHTML = '';
+    REVIEWS.forEach(r=>{
+      const box = document.createElement('div');
+      box.className = 'min-w-[300px] sm:min-w-[400px] bg-amber-50 p-4 rounded transition-all';
+      box.innerHTML = `
+        <div class="flex items-center gap-3">
+          <div class="w-12 h-12 bg-slate-300 rounded-full flex items-center justify-center font-semibold">
+            ${r.name.slice(0,1)}
+          </div>
+          <div>
+            <div class="font-semibold">${r.name}</div>
+            <div class="text-xs text-slate-500">${r.date} • ${'★'.repeat(r.rating)}</div>
+          </div>
+        </div>
+        <p class="mt-3 text-sm text-slate-700">${r.comment}</p>
+      `;
+      track.appendChild(box);
+    });
+    updateReviewPos();
+  }
+
+  function updateReviewPos(){
+    const track = q('reviewsTrack');
+    track.style.transform = `translateX(-${STATE_REVIEW.index * 100}%)`;
+  }
+
+  // manual buttons
+  q('revNext').addEventListener('click', ()=>{
+    STATE_REVIEW.index = (STATE_REVIEW.index + 1) % REVIEWS.length;
+    updateReviewPos();
+  });
+  q('revPrev').addEventListener('click', ()=>{
+    STATE_REVIEW.index = (STATE_REVIEW.index - 1 + REVIEWS.length) % REVIEWS.length;
+    updateReviewPos();
+  });
+
+  // slower auto-slide (optional, 10s delay)
+  setInterval(()=>{
+    STATE_REVIEW.index = (STATE_REVIEW.index + 1) % REVIEWS.length;
+    updateReviewPos();
+  }, 10000); 
+
+  renderReviews();
+
+  /* ==========================
+     Contact Form
+     ========================== */
+  q('contactForm').addEventListener('submit', (e)=>{
+    e.preventDefault();
+    const form = e.target;
+    if(!form.name.value.trim() || !form.email.value.trim() || !form.message.value.trim()){
+      alert('Please fill all fields.');
+      return;
+    }
+    // fake submit
+    form.reset();
+    q('contactThanks').classList.remove('hidden');
+    setTimeout(()=> q('contactThanks').classList.add('hidden'), 4000);
+  });
+
+  /* ==========================
+     Misc UI: back-to-top, mobile nav, active link highlight
+     ========================== */
+  const backTop = q('backTop');
+  window.addEventListener('scroll', ()=>{
+    if(window.scrollY > 300) backTop.classList.remove('hidden');
+    else backTop.classList.add('hidden');
+  });
+  backTop.addEventListener('click', ()=> window.scrollTo({top:0, behavior:'smooth'}));
+
+  // mobile menu toggle
+  q('mobileMenuBtn').addEventListener('click', ()=> q('mobileNav').classList.toggle('hidden'));
+
+  // set year
+  q('year').textContent = new Date().getFullYear();
+
+  // Active link highlight using IntersectionObserver for sections
+  const sectionMap = {
+    home: document.querySelector('main'),
+    products: q('products'),
+    reviews: q('reviews'),
+    contact: q('contact')
+  };
+  const navLinks = document.querySelectorAll('.nav-link');
+  const observer = new IntersectionObserver((entries)=>{
+    entries.forEach(ent=>{
+      if(ent.isIntersecting){
+        navLinks.forEach(a => a.classList.remove('text-blue-700', 'font-bold'));
+        document.querySelectorAll(`.nav-link[data-target="${ent.target.id || 'home'}"]`).forEach(el=>{
+          el.classList.add('text-blue-700','font-bold');
+        });
+      }
+    });
+  }, { threshold: 0.4 });
+
+  Object.values(sectionMap).forEach(sec => {
+    if(sec) observer.observe(sec);
+  });
+
+  // smooth scroll for nav links
+  navLinks.forEach(a=>{
+    a.addEventListener('click', (e)=>{
+      e.preventDefault();
+      const target = a.dataset.target;
+      if(target === 'home') window.scrollTo({ top: 0, behavior: 'smooth' });
+      else document.getElementById(target).scrollIntoView({behavior:'smooth', block:'start'});
+      q('mobileNav')?.classList.add('hidden');
+    });
+  });
+
+  /* ==========================
+     Local Storage restore (cart & balance)
+     ========================== */
+  function restoreState(){
+    const cartLS = localStorage.getItem('ss_cart');
+    if(cartLS) {
+      try { STATE.cart = JSON.parse(cartLS) || []; } catch(e){ STATE.cart = []; }
+    }
+    STATE.balance = Number(localStorage.getItem('ss_balance') || STATE.balance);
+    updateBalanceUI();
+    renderCart();
+  }
+
+  /* ==========================
+     Helpers for opening/closing cart on outside click
+     ========================== */
+  document.addEventListener('click', (e)=>{
+    const cart = q('cartSidebar');
+    const cartToggleBtn = q('cartToggle');
+    if(!cart) return;
+    if(!cart.classList.contains('hidden') && !cart.contains(e.target) && !cartToggleBtn.contains(e.target) && !q('cartToggleMobile').contains(e.target)){
+      // closeCart();
+    }
+  });
+
+  /* ==========================
+     Init app
+     ========================== */
+  function init(){
+    renderBanner();
+    fetchProducts();
+    renderReviews();
+    restoreState();
+  }
+
+  init();
+
+  </script>
+</body>
+</html>
